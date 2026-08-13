@@ -1,0 +1,22 @@
+{
+  "_說明": "這個檔案把「事求人開放資料 XML 裡的實際欄位名稱」對應到我們程式內部使用的邏輯欄位。第一次執行 inspect_feed.py 之後，請把下面每一項的值改成實際看到的 XML 標籤名稱。相同邏輯欄位如果有多個可能名稱，可以用陣列列出優先順序，程式會依序嘗試。",
+
+  "record_tag_hint": "Table",
+  "_record_tag_hint_說明": "XML 裡『每一筆職缺』是用什麼標籤包起來的，例如 <Table>...</Table> 或 <ROW>...</ROW>。若不確定可以留著，程式會自動偵測重複最多次的標籤。",
+
+  "agency": ["UNIT_NAME", "APPLY_UNIT_NAME", "機關名稱", "徵才機關"],
+  "person_type": ["PERSON_TYPE", "人員區分"],
+  "rank": ["RANK_NAME", "官職等", "OFFICER_RANK"],
+  "family": ["JOB_FAMILY", "職系"],
+  "title": ["JOB_TITLE", "職稱"],
+  "quota": ["QUOTA", "名額"],
+  "gender": ["GENDER", "性別"],
+  "location": ["WORK_LOCATION", "工作地點"],
+  "period": ["VALID_PERIOD", "有效期間"],
+  "qualification": ["QUALIFICATION", "資格條件"],
+  "job_content": ["JOB_CONTENT", "工作項目"],
+  "work_address": ["WORK_ADDRESS", "工作地址"],
+  "email": ["EMAIL", "聯絡E-Mail"],
+  "contact": ["CONTACT", "聯絡方式"],
+  "work_id": ["WORK_ID", "WANT_ID", "職缺編號"]
+}
