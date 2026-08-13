@@ -1,38 +1,38 @@
-name: 部署網站到 GitHub Pages
+name: 每日更新職缺資料
 
 on:
-  push:
-    branches: [main]
-    paths: ["docs/**"]
+  schedule:
+    - cron: "0 17 * * *"
   workflow_dispatch: {}
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
-  deploy:
+  fetch:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: 取得原始碼
         uses: actions/checkout@v4
 
-      - name: 設定 Pages
-        uses: actions/configure-pages@v5
-
-      - name: 打包 docs 資料夾（不經過 Jekyll）
-        uses: actions/upload-pages-artifact@v3
+      - name: 設定 Python
+        uses: actions/setup-python@v5
         with:
-          path: "docs"
+          python-version: "3.11"
 
-      - name: 部署
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: 安裝套件
+        run: pip install -r scripts/requirements.txt
+
+      - name: 執行診斷（顯示原始欄位，方便除錯，失敗不中斷）
+        run: python inspect_feed.py || true
+        working-directory: scripts
+
+      - name: 抓取並更新資料
+        run: python scripts/fetch_and_process.py
+        working-directory: .
+
+      - name: 提交更新
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "資料更新：${{ github.run_id }}"
+          file_pattern: "data/history.json docs/data.json"
