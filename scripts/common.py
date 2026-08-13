@@ -189,6 +189,36 @@ def make_record_id(rec):
     return "h:" + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
 
 
+def parse_roc_compact_date(s):
+    """
+    解析事求人常見的緊湊民國日期格式，例如 '1150228' → 2026-02-28。
+    前3碼為民國年、接著2碼月、2碼日，共7碼數字。解析失敗回傳 None。
+    """
+    if not s:
+        return None
+    s = s.strip()
+    if len(s) == 7 and s.isdigit():
+        y = int(s[:3]) + 1911
+        m = int(s[3:5])
+        d = int(s[5:7])
+        try:
+            return date(y, m, d).isoformat()
+        except ValueError:
+            return None
+    return None
+
+
+WORK_ID_RE = re.compile(r"work_id=(\d+)", re.IGNORECASE)
+
+
+def extract_work_id(view_url):
+    """從職缺詳情頁網址（VIEW_URL）裡擷取 work_id 參數，取不到回傳 None。"""
+    if not view_url:
+        return None
+    m = WORK_ID_RE.search(view_url)
+    return m.group(1) if m else None
+
+
 def split_bullets(text):
     """
     把『資格條件』『工作項目』『聯絡方式』這類原始長文字，
