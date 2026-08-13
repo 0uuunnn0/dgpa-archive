@@ -196,6 +196,11 @@ header{padding-top:24px;}
 .timeline .t-meta{font-size:11.5px; color:var(--muted); margin-top:2px;}
 .timeline .t-tag{font-size:10px; padding:1px 8px; margin-left:6px; border:1.3px solid var(--muted); color:var(--muted); font-weight:700; border-radius:999px;}
 .timeline .t-tag.open{border-color:var(--cobalt); color:var(--cobalt-dk);}
+.t-view-btn{margin-top:6px; background:none; border:1.5px solid var(--muted); color:var(--muted); border-radius:999px; padding:2px 10px; font-size:10.5px; font-weight:700; cursor:pointer;}
+.t-view-btn:hover{border-color:var(--ink); color:var(--ink);}
+.t-full{margin-top:10px; margin-bottom:4px; border:2px solid var(--ink); border-radius:14px; background:var(--card); padding:12px 14px;}
+.t-full .fp-row{font-size:11.5px;}
+.t-full .fp-row .k{width:90px;});}
 
 .full-posting-toggle{margin-top:18px; border-top:1.5px dashed #E9DFCC; padding-top:14px;}
 .fp-btn{
@@ -362,10 +367,25 @@ function adaptJob(r){
       content: r.last_similar.summary
     } : null,
     history: (r.history || []).map(h => ({
+      id: h.id,
       period: `${h.period_start} ～ ${h.period_end}`,
       end: h.period_end,
+      start: h.period_start,
       days: h.days,
-      note: `${h.agency}｜${h.title || ''}`
+      note: `${h.agency}｜${h.title || ''}`,
+      agency: h.agency,
+      city: h.city,
+      rankDetail: h.rank_detail,
+      family: h.family,
+      title: h.title,
+      quota: h.quota,
+      gender: h.gender,
+      email: h.email,
+      address: h.address,
+      qualification: h.qualification || [],
+      jobContentFull: h.job_content_full || [],
+      contact: h.contact || [],
+      viewUrl: h.view_url,
     })),
   };
 }
@@ -424,8 +444,7 @@ function renderStats(stats){
   `;
 }
 
-const state = { q:"", city:"", family:"", agency:"", ranks:new Set(), sort:"deadline", showFull:new Set(), expanded:new Set() };
-
+const state = { q:"", city:"", family:"", agency:"", ranks:new Set(), sort:"deadline", showFull:new Set(), expandedHistFull:new Set(), expanded:new Set() };
 document.getElementById('q').addEventListener('input', e=>{state.q=e.target.value.trim(); render();});
 citySel.addEventListener('change', e=>{state.city=e.target.value; render();});
 famSel.addEventListener('change', e=>{state.family=e.target.value; render();});
@@ -533,10 +552,14 @@ function card(j){
             ${open?`<li class="open"><div class="t-date mono">${j.start} ～ ${j.end}</div><div class="t-meta">本次刊登<span class="t-tag open">受理中</span></div></li>`:''}
             ${j.history.length ? j.history.map(h=>{
               const hOpen = TODAY_STR ? h.end >= TODAY_STR : false;
+              const hKey = `${j.id}::${h.id}`;
+              const hShow = state.expandedHistFull.has(hKey);
               return `
               <li class="${hOpen?'open':''}">
                 <div class="t-date mono">${h.period}</div>
                 <div class="t-meta">${h.note}（${h.days} 天）<span class="t-tag ${hOpen?'open':''}">${hOpen?'受理中':'已截止'}</span></div>
+                <button class="t-view-btn" onclick="event.stopPropagation(); toggleHistFull('${j.id}','${h.id}')">${hShow?'收合公告 ▴':'查看公告 ▾'}</button>
+                ${hShow ? `<div class="t-full">${fullPostingBody(h)}</div>` : ''}
               </li>`;
             }).join('') : '<li><div class="t-meta">查無更早的歷史紀錄</div></li>'}
           </ul>
@@ -579,6 +602,14 @@ function toggleFull(id){
   }, 20);
 }
 window.toggleFull = toggleFull;
+
+function toggleHistFull(jobId, histId){
+  const key = `${jobId}::${histId}`;
+  if(state.expandedHistFull.has(key)) state.expandedHistFull.delete(key);
+  else state.expandedHistFull.add(key);
+  render();
+}
+window.toggleHistFull = toggleHistFull;
 
 fetch('./data.json?_=' + Date.now())
   .then(r=>r.json())
