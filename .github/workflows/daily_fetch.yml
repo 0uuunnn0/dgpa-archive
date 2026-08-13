@@ -26,6 +26,7 @@ jobs:
 
       - name: 執行診斷（顯示原始欄位，方便除錯，失敗不中斷）
         run: python inspect_feed.py || true
+        shell: cmd
         working-directory: scripts
 
       - name: 抓取並更新資料
