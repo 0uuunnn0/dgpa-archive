@@ -151,11 +151,24 @@ def build_output(history):
         job["highlight"] = (r["first_seen"] == TODAY.isoformat())
         job["history"] = [
             {
+                "id": s["id"],
                 "period_start": s["period_start"],
                 "period_end": s["period_end"],
                 "days": days_between(s["period_start"], s["period_end"]),
                 "agency": s["agency"],
                 "title": s["title"],
+                "rank_detail": s.get("rank_detail"),
+                "family": s.get("family"),
+                "city": s.get("city"),
+                "summary": s.get("summary"),
+                "quota": s.get("quota"),
+                "gender": s.get("gender"),
+                "email": s.get("email"),
+                "address": s.get("address"),
+                "qualification": s.get("qualification", []),
+                "job_content_full": s.get("job_content_full", []),
+                "contact": s.get("contact", []),
+                "view_url": s.get("view_url"),
             }
             for s in siblings
         ]
