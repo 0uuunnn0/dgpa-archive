@@ -363,6 +363,7 @@ function adaptJob(r){
     } : null,
     history: (r.history || []).map(h => ({
       period: `${h.period_start} ～ ${h.period_end}`,
+      end: h.period_end,
       days: h.days,
       note: `${h.agency}｜${h.title || ''}`
     })),
@@ -530,11 +531,14 @@ function card(j){
           <h4><span class="sq"></span>歷史刊登紀錄（可回溯）</h4>
           <ul class="timeline">
             ${open?`<li class="open"><div class="t-date mono">${j.start} ～ ${j.end}</div><div class="t-meta">本次刊登<span class="t-tag open">受理中</span></div></li>`:''}
-            ${j.history.length ? j.history.map(h=>`
-              <li>
+            ${j.history.length ? j.history.map(h=>{
+              const hOpen = TODAY_STR ? h.end >= TODAY_STR : false;
+              return `
+              <li class="${hOpen?'open':''}">
                 <div class="t-date mono">${h.period}</div>
-                <div class="t-meta">${h.note}（${h.days} 天）<span class="t-tag">已截止</span></div>
-              </li>`).join('') : '<li><div class="t-meta">查無更早的歷史紀錄</div></li>'}
+                <div class="t-meta">${h.note}（${h.days} 天）<span class="t-tag ${hOpen?'open':''}">${hOpen?'受理中':'已截止'}</span></div>
+              </li>`;
+            }).join('') : '<li><div class="t-meta">查無更早的歷史紀錄</div></li>'}
           </ul>
         </div>
       </div>
