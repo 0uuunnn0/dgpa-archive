@@ -21,7 +21,8 @@ from collections import defaultdict
 
 from common import (
     fetch_raw_xml, parse_records, resolve_field, detect_rank_track,
-    detect_city, parse_period, make_record_id, days_between, split_bullets,
+    detect_city, parse_roc_compact_date, extract_work_id,
+    make_record_id, days_between, split_bullets,
     EXCLUDE_PERSON_TYPES,
 )
 
@@ -59,10 +60,12 @@ def normalize(raw, mapping):
     family = resolve_field(raw, mapping["family"])
     title = resolve_field(raw, mapping["title"])
     location = resolve_field(raw, mapping["location"])
-    period_text = resolve_field(raw, mapping["period"])
+    date_from = resolve_field(raw, mapping.get("date_from", []))
+    date_to = resolve_field(raw, mapping.get("date_to", []))
     job_content = resolve_field(raw, mapping["job_content"])
     work_address = resolve_field(raw, mapping["work_address"])
-    work_id = resolve_field(raw, mapping.get("work_id", []))
+    view_url = resolve_field(raw, mapping.get("view_url", []))
+    work_id = extract_work_id(view_url)
 
     # 排除非公務人員任用資格
     if person_type and any(ex in person_type for ex in EXCLUDE_PERSON_TYPES):
@@ -73,9 +76,10 @@ def normalize(raw, mapping):
         return None, f"官職等文字無法判斷是否為簡任/薦任/委任：{rank_text!r}"
 
     city = detect_city(location) or detect_city(work_address)
-    start_iso, end_iso = parse_period(period_text)
+    start_iso = parse_roc_compact_date(date_from)
+    end_iso = parse_roc_compact_date(date_to)
     if not start_iso or not end_iso:
-        return None, f"有效期間格式無法解析：{period_text!r}"
+        return None, f"有效期間格式無法解析：date_from={date_from!r} date_to={date_to!r}"
 
     summary = (job_content or "").strip()
     if len(summary) > SUMMARY_LEN:
@@ -83,6 +87,7 @@ def normalize(raw, mapping):
 
     rec = {
         "work_id": work_id,
+        "view_url": view_url,
         "agency": agency,
         "city": city,
         "rank_track": rank_track,
